@@ -1,0 +1,715 @@
+{
+  "info": {
+    "name": "Biblioteca · imágenes (Multer + Supabase)",
+    "description": "Solo los requests de la clase de imágenes. Es autosuficiente: hace sus propios logins.\n\nAntes de correr: npm run seed y npm start.\n\nEn los requests con archivo: Body -> form-data -> en la fila imagen, Select Files.\nNUNCA pongas el header Content-Type a mano.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "48 · Login Carla (vendedora)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"responde 200\", function () { pm.response.to.have.status(200); });",
+              "pm.environment.set(\"tokenCarla\", pm.response.json().token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"carla.ruiz@mail.com\",\n  \"password\": \"carla1234\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "49 · Login Ana (compradora)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"responde 200\", function () { pm.response.to.have.status(200); });",
+              "pm.environment.set(\"tokenAna\", pm.response.json().token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"ana.gomez@mail.com\",\n  \"password\": \"ana12345\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "50 · Crear libro SIN imagen (JSON de siempre)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"responde 201\", function () { pm.response.to.have.status(201); });",
+              "pm.test(\"imagen queda en null\", () => pm.expect(pm.response.json().imagen).to.eql(null));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenCarla}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titulo\": \"libro sin tapa\",\n  \"isbn\": \"SIN-001\",\n  \"precio\": 10000,\n  \"stock\": 3\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/libros",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "libros"
+          ]
+        },
+        "description": "Lo de siempre sigue funcionando: la imagen es opcional."
+      }
+    },
+    {
+      "name": "51 · ⭐ Crear libro CON imagen",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"responde 201\", function () { pm.response.to.have.status(201); });",
+              "const libro = pm.response.json();",
+              "pm.environment.set(\"libroImagenId\", libro._id);",
+              "pm.environment.set(\"imagenUrl\", libro.imagen);",
+              "pm.test(\"guardó una URL\", () => pm.expect(libro.imagen).to.be.a(\"string\"));",
+              "pm.test(\"la URL es de Supabase\", () => pm.expect(libro.imagen).to.include(\"/storage/v1/object/public/\"));",
+              "",
+              "// form-data manda TODO como texto, pero el schema dice Number y Mongoose convierte",
+              "pm.test(\"el precio llegó como número\", () => pm.expect(libro.precio).to.eql(25000));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenCarla}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "titulo",
+              "value": "rayuela ilustrada",
+              "type": "text"
+            },
+            {
+              "key": "isbn",
+              "value": "IMG-001",
+              "type": "text"
+            },
+            {
+              "key": "precio",
+              "value": "25000",
+              "type": "text"
+            },
+            {
+              "key": "stock",
+              "value": "5",
+              "type": "text"
+            },
+            {
+              "key": "genero",
+              "value": "novela",
+              "type": "text"
+            },
+            {
+              "key": "imagen",
+              "type": "file",
+              "src": [],
+              "description": "Elegí una imagen de tu compu"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/libros",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "libros"
+          ]
+        },
+        "description": "Body → form-data. En la fila 'imagen' apretá 'Select Files' y elegí una foto.\nDespués abrí la URL que devuelve: la imagen ya está en Supabase."
+      }
+    },
+    {
+      "name": "52 · Ver el libro (la URL quedó guardada)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"responde 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"tiene imagen\", () => pm.expect(pm.response.json().imagen).to.be.a(\"string\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/libros/{{libroImagenId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "libros",
+            "{{libroImagenId}}"
+          ]
+        },
+        "description": "En Mongo está la URL, no el archivo. El archivo vive en Supabase."
+      }
+    },
+    {
+      "name": "53 · Un PDF en vez de una imagen → 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"responde 400\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"lo explica\", () => pm.expect(pm.response.json().error).to.include(\"imágenes\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenCarla}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "titulo",
+              "value": "con pdf",
+              "type": "text"
+            },
+            {
+              "key": "isbn",
+              "value": "IMG-002",
+              "type": "text"
+            },
+            {
+              "key": "precio",
+              "value": "100",
+              "type": "text"
+            },
+            {
+              "key": "stock",
+              "value": "1",
+              "type": "text"
+            },
+            {
+              "key": "imagen",
+              "type": "file",
+              "src": [],
+              "description": "Elegí una imagen de tu compu"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/libros",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "libros"
+          ]
+        },
+        "description": "Elegí un PDF (o cualquier cosa que no sea imagen).\nLo frena el fileFilter de Multer, ANTES de llegar al controller."
+      }
+    },
+    {
+      "name": "54 · Una imagen de más de 5 MB → 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"responde 400\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"habla del tamaño\", () => pm.expect(pm.response.json().error).to.include(\"5 MB\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenCarla}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "titulo",
+              "value": "pesada",
+              "type": "text"
+            },
+            {
+              "key": "isbn",
+              "value": "IMG-003",
+              "type": "text"
+            },
+            {
+              "key": "precio",
+              "value": "100",
+              "type": "text"
+            },
+            {
+              "key": "stock",
+              "value": "1",
+              "type": "text"
+            },
+            {
+              "key": "imagen",
+              "type": "file",
+              "src": [],
+              "description": "Elegí una imagen de tu compu"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/libros",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "libros"
+          ]
+        },
+        "description": "Elegí una foto grande (del celular, por ejemplo).\nLo frena limits.fileSize: el archivo entero iría a la RAM."
+      }
+    },
+    {
+      "name": "55 · El campo se llama distinto → 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"responde 400\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"dice cómo tiene que llamarse\", () => pm.expect(pm.response.json().error).to.include(\"imagen\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenCarla}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "titulo",
+              "value": "campo mal",
+              "type": "text"
+            },
+            {
+              "key": "isbn",
+              "value": "IMG-004",
+              "type": "text"
+            },
+            {
+              "key": "precio",
+              "value": "100",
+              "type": "text"
+            },
+            {
+              "key": "stock",
+              "value": "1",
+              "type": "text"
+            },
+            {
+              "key": "foto",
+              "type": "file",
+              "src": [],
+              "description": "Elegí una imagen de tu compu"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/libros",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "libros"
+          ]
+        },
+        "description": "Acá el archivo va en un campo llamado 'foto'.\nupload.single('imagen') espera 'imagen': el nombre tiene que coincidir EXACTO."
+      }
+    },
+    {
+      "name": "56 · Una compradora subiendo → 403",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"responde 403\", function () { pm.response.to.have.status(403); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenAna}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "titulo",
+              "value": "de ana",
+              "type": "text"
+            },
+            {
+              "key": "isbn",
+              "value": "IMG-005",
+              "type": "text"
+            },
+            {
+              "key": "precio",
+              "value": "100",
+              "type": "text"
+            },
+            {
+              "key": "stock",
+              "value": "1",
+              "type": "text"
+            },
+            {
+              "key": "imagen",
+              "type": "file",
+              "src": [],
+              "description": "Elegí una imagen de tu compu"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/libros",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "libros"
+          ]
+        },
+        "description": "soloStaff va ANTES que Multer: se rechaza sin siquiera recibir el archivo."
+      }
+    },
+    {
+      "name": "57 · ISBN repetido → 409 (y la imagen no queda huérfana)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"responde 409\", function () { pm.response.to.have.status(409); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenCarla}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "titulo",
+              "value": "repetido",
+              "type": "text"
+            },
+            {
+              "key": "isbn",
+              "value": "IMG-001",
+              "type": "text"
+            },
+            {
+              "key": "precio",
+              "value": "100",
+              "type": "text"
+            },
+            {
+              "key": "stock",
+              "value": "1",
+              "type": "text"
+            },
+            {
+              "key": "imagen",
+              "type": "file",
+              "src": [],
+              "description": "Elegí una imagen de tu compu"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/libros",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "libros"
+          ]
+        },
+        "description": "La imagen se subió ANTES de que fallara el create.\nEl catch del service la borra: miralo en Supabase, no quedó nada nuevo."
+      }
+    },
+    {
+      "name": "58 · ⭐ Cambiar la tapa",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"responde 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"cambió la URL\", () => pm.expect(pm.response.json().imagen).to.not.eql(pm.environment.get(\"imagenUrl\")));",
+              "pm.environment.set(\"imagenUrl\", pm.response.json().imagen);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenCarla}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "precio",
+              "value": "28000",
+              "type": "text"
+            },
+            {
+              "key": "imagen",
+              "type": "file",
+              "src": [],
+              "description": "Elegí una imagen de tu compu"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/libros/{{libroImagenId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "libros",
+            "{{libroImagenId}}"
+          ]
+        },
+        "description": "Elegí OTRA imagen. La vieja se borra de Supabase.\n⚠️ La URL vieja puede seguir mostrando la foto un rato: es el CDN. En el bucket ya no está."
+      }
+    },
+    {
+      "name": "59 · PATCH sin imagen: no toca la tapa",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"responde 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"la imagen sigue siendo la misma\", () => pm.expect(pm.response.json().imagen).to.eql(pm.environment.get(\"imagenUrl\")));",
+              "pm.test(\"y el stock sí cambió\", () => pm.expect(pm.response.json().stock).to.eql(9));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenCarla}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"stock\": 9\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/libros/{{libroImagenId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "libros",
+            "{{libroImagenId}}"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "60 · Borrar el libro (se lleva la tapa)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"responde 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenCarla}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/libros/{{libroImagenId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "libros",
+            "{{libroImagenId}}"
+          ]
+        },
+        "description": "Mirá el bucket en Supabase: la imagen de este libro ya no está."
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api"
+    }
+  ]
+}
