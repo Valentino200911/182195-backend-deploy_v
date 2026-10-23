@@ -42,7 +42,6 @@ const definicion = {
     // Dónde está la API. Swagger UI usa el primero para el botón "Try it out".
     servers: [
         { url: `http://localhost:${PORT}`, description: "Desarrollo (tu máquina)" },
-        // { url: "https://biblioteca.onrender.com", description: "Producción" },
     ],
 
     // ─────────────────────────────────────────────────────────────

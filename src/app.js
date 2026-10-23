@@ -30,7 +30,7 @@ import carritoRoutes from "./routes/carritoRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
 import pedidoRoutes from "./routes/pedidoRoutes.js"
 import { manejarErrores } from './middleware/manejarErrores.js'
-import { CARPETA_IMAGENES } from './utils/config.js'
+import { CARPETA_IMAGENES, ES_PRODUCCION } from './utils/config.js'
 import swaggerUi from "swagger-ui-express"
 import { especificacion } from './docs/swagger.js'
 
@@ -44,16 +44,36 @@ app.use(cors())
 app.use(express.json())
 
 // clase 23 · servir las imágenes guardadas en disco (solo hace falta con STORAGE=local)
+//
+// ⚠️ clase 27 · En Vercel esta línea no sirve para nada, y es importante saber
+//    por qué: el disco de una función serverless es EFÍMERO. La imagen se sube
+//    bien y desaparece en la invocación siguiente.
+//    Por eso en producción STORAGE tiene que ser "supabase", que devuelve una
+//    URL absoluta que no depende de dónde esté corriendo el back.
 app.use(`/${CARPETA_IMAGENES}`, express.static(CARPETA_IMAGENES))
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(especificacion, {
-    customSiteTitle: "Api Biblioteca - documentación",
-    swaggerOptions: { persistAuthorization: true }
-}))
+// ═══ clase 27 · LA DOCUMENTACIÓN, SOLO EN LOCAL ═══
+//
+// En producción NO se publica, por dos motivos:
+//
+//   1. Es un mapa de la API: le está contando a cualquiera que existe
+//      POST /api/usuarios, qué campos acepta y qué rol hace qué.
+//   2. El botón "Try it out" le pegaría al servidor de verdad.
+//
+// Para verla: se levanta el proyecto en tu máquina (npm start) → /api-docs
+//
+// ⚠️ Vercel pone NODE_ENV=production solo. En tu máquina esa variable no
+//    está, y Jest la pone en "test": en los dos casos la doc SÍ se monta.
+if (!ES_PRODUCCION) {
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(especificacion, {
+        customSiteTitle: "Api Biblioteca - documentación",
+        swaggerOptions: { persistAuthorization: true }
+    }))
 
-app.get("/api-docs.json", (req, res) => {
-    res.json(especificacion)
-})
+    app.get("/api-docs.json", (req, res) => {
+        res.json(especificacion)
+    })
+}
 
 // Agrupadores de rutas
 app.use("/api/auth", authRoutes)

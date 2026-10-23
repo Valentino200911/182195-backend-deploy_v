@@ -23,9 +23,13 @@ const SUPABASE_KEY = process.env.SUPABASE_KEY
 // Sin este export, el proyecto NO arranca con STORAGE=local.
 const API_URL = process.env.API_URL || `http://localhost:${PORT}`
 
+// clase 27 · Vercel pone NODE_ENV=production solo. En tu máquina no está,
+// y Jest lo pone en "test": los dos cuentan como "no producción".
+const ES_PRODUCCION = process.env.NODE_ENV === "production"
+
 const STORAGE = process.env.STORAGE || "local"
 const CARPETA_IMAGENES = process.env.CARPETA_IMAGENES || "uploads"
 
 
-export {MONGO_URI, PORT, JWT_SECRET, JWT_EXPIRA, SUPABASE_URL, SUPABASE_KEY, STORAGE, CARPETA_IMAGENES, API_URL }
+export {MONGO_URI, PORT, JWT_SECRET, JWT_EXPIRA, SUPABASE_URL, SUPABASE_KEY, STORAGE, CARPETA_IMAGENES, API_URL, ES_PRODUCCION }
 

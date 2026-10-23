@@ -4,3 +4,6 @@ node_modules
 # clase 24 · lo que generan los tests
 uploads-test
 coverage
+
+# clase 27 · lo que deja la CLI de Vercel
+.vercel

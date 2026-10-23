@@ -70,6 +70,43 @@ const explicar = (error) => {
     return error.message
 }
 
+// ─────────────────────────────────────────────────────────────
+//  clase 27 · LA CONEXIÓN EN SERVERLESS (Vercel)
+//
+//  En tu máquina el servidor arranca UNA vez y se queda prendido: por eso
+//  conectarDB() corre al principio y listo.
+//
+//  En Vercel no hay "arranque": cada petición puede despertar una función
+//  nueva. Entonces hay que conectarse por petición... pero sin abrir una
+//  conexión cada vez, porque el cluster free banca 500 y se acaban rápido.
+//
+//  El truco es guardar la PROMESA, no esperar a que termine:
+//  si dos peticiones entran juntas, las dos reciben la misma promesa y se
+//  abre una sola conexión.
+//
+//  ⚠️ Y acá NO va process.exit(): eso mataría la función entera. Si falla,
+//     se deja que el error suba y api/index.js responde 503.
+// ─────────────────────────────────────────────────────────────
+let promesa = null
+
+export const conectar = () => {
+    if (!promesa) {
+        promesa = mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 10_000 })
+            .catch((error) => {
+                // si falló, se borra la promesa para poder reintentar en la
+                // próxima petición. Si no, queda cacheado el error para siempre.
+                promesa = null
+                throw error
+            })
+    }
+
+    return promesa
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Y esta es la de siempre, para correr en tu máquina (npm start).
+//  Vercel no la usa: usa conectar().
+// ─────────────────────────────────────────────────────────────
 export const conectarDB = async () => {
     try {
         await mongoose.connect(MONGO_URI, {
